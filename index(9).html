@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Oefen wiskunde, speel rekenspellen en ontdek verrassende wiskundefeiten bij Wis4All.">
+<title>Wis4All | Wiskunde om te spelen</title>
+<style>
+:root{color-scheme:dark;--bg:#111226;--panel:#1c1d37;--edge:#414264;--white:#fbf9ff;--soft:#d3d1e9;--lime:#dafc75;--pink:#ffa8df;--blue:#a9bbff;--mint:#83f3ce}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--white);font:1rem/1.55 system-ui,sans-serif}a{color:inherit}button,input,select{font:inherit}button,a,select{touch-action:manipulation}:focus-visible{outline:3px solid var(--mint);outline-offset:4px}header,main,footer{width:min(1140px,calc(100% - 36px));margin:auto}header{min-height:82px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.brand{font-size:1.65rem;letter-spacing:-.07em;font-weight:950;text-decoration:none}.brand span{color:var(--lime)}nav{display:flex;gap:clamp(12px,3vw,32px);flex-wrap:wrap}nav a{text-decoration:none;font-weight:700;color:var(--soft)}nav a:hover{color:var(--lime)}.hero{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;min-height:460px;padding:clamp(24px,5vw,64px);border:1px solid var(--edge);border-radius:35px;overflow:hidden;background:radial-gradient(ellipse at 88% 38%,#453477,transparent 62%),linear-gradient(135deg,#21223d,#191930)}h1,h2,h3,p{margin:0}h1{font-size:clamp(3rem,7.7vw,6.7rem);line-height:.94;letter-spacing:-.085em;font-weight:950}h1 em{color:var(--lime);font-style:normal}h2{font-size:clamp(2rem,5vw,3.2rem);line-height:1.05;letter-spacing:-.055em}h3{font-size:1.55rem;line-height:1.15;letter-spacing:-.035em}.hero p,.intro{color:var(--soft);margin:1rem 0}.actions,.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.button,button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:.55rem 1rem;border:1px solid transparent;border-radius:13px;background:var(--lime);color:#151829;font-weight:850;text-decoration:none;cursor:pointer}.secondary{background:transparent;border-color:var(--edge);color:var(--white)}button:hover,.button:hover{filter:brightness(1.13)}button:disabled{opacity:.55;cursor:default}.art{position:relative;min-height:340px;display:grid;place-items:center;isolation:isolate;background-image:radial-gradient(#bda7fd59 1px,transparent 1px);background-size:20px 20px;mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}.orbit{position:absolute;width:min(100%,330px);aspect-ratio:1;border:1px dashed #d9ccff87;border-radius:50%}.tile{display:grid;place-items:center;position:absolute;line-height:1;font-weight:950;color:#171831;border-radius:25%;box-shadow:0 10px 0 #0e102664,0 24px 32px #100b335d}.pi{width:145px;height:145px;font-size:6.4rem;background:var(--pink);transform:rotate(-12deg)}.percent{width:86px;height:86px;font-size:3.5rem;background:var(--lime);right:8%;top:9%;transform:rotate(15deg)}.root{width:89px;height:89px;font-size:3.9rem;background:var(--mint);left:9%;bottom:10%;transform:rotate(12deg)}.plus{width:60px;height:60px;font-size:2.7rem;background:var(--blue);right:14%;bottom:10%;transform:rotate(-11deg)}section{margin-top:60px;scroll-margin-top:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.card{padding:clamp(18px,3.3vw,32px);border-radius:23px;background:var(--panel);border:1px solid var(--edge);min-width:0}.fact{background:var(--pink);color:#25142c;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}.fact button{background:#281733;color:white}.fact p{max-width:68ch}.fact h3{margin-bottom:.5rem}.game h3,.game p{margin-bottom:.7rem}.code{border-top:4px solid var(--pink)}.target{border-top:4px solid var(--mint)}.exercise{border-top:4px solid var(--lime)}.question{font-size:clamp(1.35rem,4vw,2.35rem);font-weight:900;line-height:1.1;margin:1rem 0;overflow-wrap:anywhere}.status{min-height:1.6em;color:var(--mint);margin-top:.6rem}.score{font-weight:750;color:var(--soft);margin-top:.35rem}.field{display:grid;gap:4px;color:var(--soft);font-weight:700}input,select{color:var(--white);background:#101126;border:1px solid #696989;border-radius:10px;padding:.55rem .65rem;min-height:46px;max-width:100%}input{width:12rem}form{margin-top:1rem}.numbers{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.numbers button{min-width:46px;background:var(--mint);padding:.45rem}.numbers button[aria-pressed=true]{background:var(--pink);outline:2px solid white}.numbers .operator{background:var(--blue)}footer{padding:42px 0;color:var(--soft);font-weight:700}[hidden]{display:none!important}@media(max-width:720px){.hero,.grid,.fact{grid-template-columns:1fr}.hero{gap:12px}.art{min-height:255px}.orbit{width:245px}.pi{width:115px;height:115px;font-size:5rem}.percent,.root{width:68px;height:68px;font-size:2.9rem}.fact button{justify-self:start}section{margin-top:42px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header><a class="brand" href="#top">Wis<span>4</span>All</a><nav aria-label="Hoofdnavigatie"><a href="#oefenen">Oefenen</a><a href="#spelen">Spelen</a><a href="#feitjes">Feitjes</a></nav></header>
+<main id="top">
+<div class="hero">
+  <div><h1>Speel met<br><em>wiskunde.</em></h1><p>Kraak een code, mik op het doelgetal of oefen tot je vijf antwoorden op rij goed hebt.</p><div class="actions"><a class="button" href="#spelen">Kies een spel</a><a class="button secondary" href="#oefenen">Start met oefenen</a></div></div>
+  <div class="art" aria-hidden="true"><div class="orbit"></div><div class="tile pi">π</div><div class="tile percent">%</div><div class="tile root">√</div><div class="tile plus">+</div></div>
+</div>
+<section id="feitjes" aria-labelledby="fact-heading">
+ <div class="card fact"><div><h3 id="fact-heading">De verrassende verjaardagskans</h3><p id="fact-text">In een groep van 23 mensen is de kans dat minstens twee dezelfde verjaardag hebben al ruim 50%, als je uitgaat van 365 even waarschijnlijke verjaardagen.</p></div><button id="next-fact" type="button">Volgend feitje</button></div>
+ <p id="fact-status" class="status" role="status" hidden></p>
+</section>
+<section id="oefenen" aria-labelledby="practice-heading">
+ <h2 id="practice-heading">Even oefenen</h2><p class="intro">Kies een onderwerp en niveau. Hoeveel opgaven los jij achter elkaar goed op?</p>
+ <div class="card exercise">
+ <div class="controls"><label class="field">Onderwerp<select id="topic"><option>Negatieve getallen</option><option>Breuken</option><option>Procenten</option><option>Vergelijkingen</option></select></label><label class="field">Niveau<select id="level"><option>Basis</option><option>Uitdaging</option></select></label></div>
+ <p id="question" class="question" aria-live="polite"></p>
+ <form id="exercise-form" class="controls"><label class="field">Jouw antwoord<input id="answer" required autocomplete="off" placeholder="Bijv. −3 of 1/2" aria-describedby="question"></label><button id="check" type="submit">Controleer</button><button id="next-question" class="secondary" type="button">Nieuwe opgave</button></form>
+ <p id="feedback" class="status" role="status"></p><p id="streak" class="score">0 achter elkaar goed</p>
+ </div>
+</section>
+<section id="spelen" aria-labelledby="games-heading">
+ <h2 id="games-heading">Kies je uitdaging</h2>
+ <div class="grid">
+ <article class="card game code"><h3>Kraak de code</h3><p>Raad een code met drie verschillende cijfers. Je krijgt zes pogingen. Na elke gok zie je hoeveel cijfers goed staan en hoeveel op de verkeerde plek staan.</p>
+ <form id="code-form" class="controls"><label class="field">Jouw code<input id="guess" inputmode="numeric" maxlength="3" pattern="[0-9]{3}" required autocomplete="off" placeholder="Bijv. 042"></label><button id="guess-button">Probeer</button><button id="reset-code" class="secondary" type="button">Nieuwe code</button></form>
+ <p id="code-feedback" class="status" role="status"></p><ol id="history" aria-label="Eerdere pogingen"></ol></article>
+ <article class="card game target"><h3>Raak het getal</h3><p>Kies twee getallen en een bewerking. Het resultaat komt op één kaart terug. Gebruik alle vier kaarten om precies op het doel te eindigen.</p>
+ <div id="target-number" class="question" aria-live="polite"></div><div id="cards" class="numbers" aria-label="Getalkaarten"></div>
+ <div class="numbers" aria-label="Bewerkingen"><button class="operator" data-op="+" aria-label="Optellen">+</button><button class="operator" data-op="−" aria-label="Aftrekken">−</button><button class="operator" data-op="×" aria-label="Vermenigvuldigen">×</button></div>
+ <p id="target-feedback" class="status" role="status"></p><div class="actions"><button id="retry-target" type="button" class="secondary">Opnieuw</button><button id="new-target" type="button" class="secondary">Nieuw doel</button></div></article>
+ </div>
+</section>
+</main>
+<footer>Wis4All</footer>
+<script>
+"use strict";
+const get = id => document.getElementById(id);
+const random = (min,max) => min + Math.floor(Math.random() * (max-min+1));
+const facts = [
+ ["De verrassende verjaardagskans", "In een groep van 23 mensen is de kans dat minstens twee dezelfde verjaardag hebben al ruim 50%, als je uitgaat van 365 even waarschijnlijke verjaardagen."],
+ ["Een kaartspel heeft meer volgordes dan je denkt", "Met 52 verschillende kaarten zijn er 52! mogelijke volgordes. Dat is een getal met 68 cijfers."],
+ ["Een lus met één kant", "Draai één uiteinde van een strook papier een halve slag en plak de uiteinden aan elkaar. Trek een lijn over de lus. Je komt vanzelf over beide oorspronkelijke kanten van het papier."],
+ ["Elk oneven getal helpt een vierkant bouwen", "Tel 1 + 3 + 5 + 7 en je krijgt 16 = 4². Elk volgend oneven getal vormt een nieuwe rand om het vierkant."]
+];
+let fact = 0;
+get("next-fact").onclick = () => {
+ fact = (fact+1) % facts.length;
+ [get("fact-heading").textContent,get("fact-text").textContent] = facts[fact];
+ get("fact-status").hidden = false;
+ get("fact-status").textContent = "Feitje " + (fact+1) + " van " + facts.length;
+};
+function makeQuestion(topic, hard) {
+ const a = random(2, hard ? 25 : 10);
+ const b = random(2, hard ? 18 : 9);
+ switch(topic) {
+ case 0: return hard ? ["−"+a+" − (−"+b+") = ?",b-a,String(b-a)] : ["−"+a+" + "+b+" = ?",b-a,String(b-a)];
+ case 1: {
+   const d = hard ? random(3,10) : random(3,8);
+   const n = random(1,d-1);
+   return hard ? [n+"/"+d+" + 1/"+(2*d)+" = ?",(2*n+1)/(2*d),(2*n+1)+"/"+(2*d)] : ["1/"+d+" + "+n+"/"+d+" = ?",(1+n)/d,(1+n)+"/"+d];
+ }
+ case 2: {
+   const pct = (hard ? random(3,19) : random(1,9)) * (hard ? 5 : 10);
+   const base = a * (hard ? 12 : 10);
+   const value = base*pct/100;
+   return [pct+"% van "+base+" = ?",value,String(value).replace(".",",")];
+ }
+ default: {
+   const value = hard ? -a : a;
+   const factor = hard ? b : 2;
+   return [factor+"x + "+b+" = "+(factor*value+b)+". Wat is x?",value,String(value)];
+ }
+ }
+}
+function parseAnswer(raw) {
+ const parts = raw.trim().replaceAll("−","-").replaceAll(",",".").split("/").map(part => part.trim());
+ if (parts.length>2 || !parts.every(part => /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(part))) return NaN;
+ return parts.length===1 ? Number(parts[0]) : Number(parts[0])/Number(parts[1]);
+}
+let current;
+let streak = 0;
+let locked = false;
+function newQuestion() {
+ const topic = get("topic").selectedIndex;
+ const hard = get("level").selectedIndex===1;
+ let next = makeQuestion(topic,hard);
+ if (current && current[0]===next[0]) next = makeQuestion(topic,hard);
+ current = next;
+ locked = false;
+ get("question").textContent = current[0];
+ get("answer").value = "";
+ get("feedback").textContent = "";
+ get("check").textContent = "Controleer";
+}
+function showStreak() { get("streak").textContent = streak+" achter elkaar goed"; }
+for (const id of ["topic","level"]) get(id).onchange = () => { streak=0; showStreak(); newQuestion(); };
+get("next-question").onclick = () => { if (!locked) { streak=0; showStreak(); } newQuestion(); get("answer").focus(); };
+get("exercise-form").onsubmit = event => {
+ event.preventDefault();
+ if (locked) { newQuestion(); get("answer").focus(); return; }
+ const entered = parseAnswer(get("answer").value);
+ if (!Number.isFinite(entered)) { get("feedback").textContent = "Vul een getal of breuk in, bijvoorbeeld 0,5 of 1/2."; return; }
+ const right = Math.abs(entered-current[1])<1e-8;
+ streak = right ? streak+1 : 0;
+ get("feedback").textContent = right ? (streak===5 ? "Goed! Je hebt er vijf op rij." : "Helemaal goed!") : "Het juiste antwoord is "+current[2]+".";
+ showStreak();
+ locked = true;
+ get("check").textContent = "Volgende opgave";
+};
+let code;
+let attempts;
+function resetCode() {
+ const digits = "0123456789".split("");
+ code = Array.from({length:3},()=>digits.splice(random(0,digits.length-1),1)[0]).join("");
+ attempts = 0;
+ get("history").replaceChildren();
+ get("guess").value = "";
+ get("guess").disabled = false;
+ get("guess-button").disabled = false;
+ get("code-feedback").textContent = "Nog 6 pogingen.";
+}
+get("reset-code").onclick = () => { resetCode(); get("guess").focus(); };
+get("code-form").onsubmit = event => {
+ event.preventDefault();
+ const guess = get("guess").value;
+ if (new Set(guess).size!==3) { get("code-feedback").textContent = "Kies drie verschillende cijfers."; return; }
+ attempts++;
+ const exact = [...guess].filter((digit,i)=>digit===code[i]).length;
+ const misplaced = [...guess].filter((digit,i)=>digit!==code[i] && code.includes(digit)).length;
+ const log = document.createElement("li");
+ log.textContent = guess+" · "+exact+" goed op de juiste plek · "+misplaced+" op de verkeerde plek";
+ get("history").prepend(log);
+ const finished = exact===3 || attempts===6;
+ get("code-feedback").textContent = exact===3 ? "Code gekraakt in "+attempts+" "+(attempts===1?"poging!":"pogingen!") : finished ? "De code was "+code+"." : "Nog "+(6-attempts)+" pogingen.";
+ get("guess").disabled = finished;
+ get("guess-button").disabled = finished;
+ get("guess").value = "";
+ if (finished) get("reset-code").focus(); else get("guess").focus();
+};
+let startCards, cards, goal, firstCard, operation;
+const calculate = (a,b,op) => op==="+" ? a+b : op==="−" ? a-b : a*b;
+function renderCards(focusIndex) {
+ get("cards").replaceChildren(...cards.map((value,index)=>{
+   const button = document.createElement("button");
+   button.type = "button";
+   button.textContent = value;
+   button.setAttribute("aria-pressed",String(firstCard===index));
+   button.disabled = cards.length===1;
+   button.onclick = () => chooseCard(index);
+   return button;
+ }));
+ for (const button of document.querySelectorAll("[data-op]")) {
+   button.disabled = cards.length===1;
+   button.setAttribute("aria-pressed",String(button.dataset.op===operation));
+ }
+ if (focusIndex!==undefined) {
+   if (cards.length===1) get("retry-target").focus();
+   else get("cards").children[focusIndex].focus();
+ }
+}
+function chooseCard(index) {
+ if (firstCard===null || firstCard===index) {
+   firstCard = firstCard===index ? null : index;
+   if(firstCard===null) operation = null;
+   get("target-feedback").textContent = firstCard===null ? "Kies een kaart." : "Kies nu een bewerking.";
+   renderCards(index);
+   return;
+ }
+ if (!operation) { get("target-feedback").textContent = "Kies eerst +, − of ×."; return; }
+ const a = cards[firstCard], b = cards[index];
+ const result = calculate(a,b,operation);
+ const message = a+" "+operation+" "+b+" = "+result+".";
+ cards = cards.filter((_,i)=>i!==firstCard && i!==index);
+ cards.push(result);
+ firstCard = operation = null;
+ get("target-feedback").textContent = message+(cards.length!==1 ? "" : result===goal ? " Doel geraakt!" : " Het doel was "+goal+". Probeer opnieuw.");
+ renderCards(cards.length-1);
+}
+function resetTarget() {
+ cards = [...startCards];
+ firstCard = operation = null;
+ get("target-number").textContent = "Doel: "+goal;
+ get("target-feedback").textContent = "Kies een kaart.";
+ renderCards();
+}
+function newTarget() {
+ startCards = Array.from({length:4},()=>random(1,9));
+ const [a,b,c,d] = startCards;
+ goal = (a+b)*c-d;
+ resetTarget();
+}
+for (const button of document.querySelectorAll("[data-op]")) button.onclick = () => {
+ if (firstCard===null) { get("target-feedback").textContent = "Kies eerst een kaart."; return; }
+ operation = button.dataset.op;
+ for (const key of document.querySelectorAll("[data-op]")) key.setAttribute("aria-pressed",String(key===button));
+ get("target-feedback").textContent = cards[firstCard]+" "+operation+" … Kies de tweede kaart.";
+};
+get("retry-target").onclick = resetTarget;
+get("new-target").onclick = newTarget;
+newQuestion();
+resetCode();
+newTarget();
+</script>
+</body>
+</html>
