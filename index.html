@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Oefen wiskunde, speel rekenspellen en ontdek verrassende wiskundefeiten bij Wis4All.">
-<title>Wis4All | Wiskunde om te spelen</title>
+<meta name="description" content="Online wiskundelessen, cursussen en oefeningen met uitgewerkte voorbeelden en directe feedback.">
+<title>Wis4All | Online lessen, cursussen en oefeningen</title>
 <style>
 :root{color-scheme:light;--bg:#faf7ff;--field:#fff;--panel:#fff;--edge:color-mix(in srgb,var(--violet) 18%,var(--bg));--edge2:color-mix(in srgb,var(--violet) 35%,var(--field));--tint:color-mix(in srgb,var(--violet) 9%,var(--field));--white:#1f1b3d;--soft:#5b5782;--lime:#c8f55a;--pink:#ffa8df;--blue:#a9bbff;--mint:#83f3ce;--violet:#8b6cff;--g2:#e0409f;--g3:#ff8a3d;--accent:color-mix(in srgb,var(--violet) 78%,#000);--hdr:#ffffffcc;--h1:color-mix(in srgb,var(--violet) 28%,transparent);--h2:color-mix(in srgb,var(--pink) 30%,transparent);--h3:#fff;--h4:color-mix(in srgb,var(--violet) 8%,#fff);--limed:#4f7a00;--mintd:#07896a;--pinkd:#c02a8b;--scorebg:#eaffb5}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--white);font:1rem/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden;position:relative}
 body::before,body::after{content:"";position:fixed;z-index:-1;width:520px;height:520px;border-radius:50%;filter:blur(110px);opacity:.3;pointer-events:none}body::before{background:var(--violet);top:-160px;left:-160px}body::after{background:#ff5fc1;bottom:-220px;right:-160px;opacity:.2}
@@ -66,7 +66,7 @@ header .tools .dot[data-p=violet]{background:#8b6cff}header .tools .dot[data-p=o
 <header><a class="brand" href="#top">Wis<span>4</span>All</a><nav aria-label="Hoofdnavigatie"><a href="#hoe">Hoe het werkt</a><a href="#niveaus">Niveaus</a><a href="#onderwerpen">Lessen</a><a href="#oefenen">Oefenen</a><a href="#spelen">Spelen</a><a href="#feitjes">Feitjes</a></nav><div class="tools" role="group" aria-label="Weergave"><button id="theme-toggle" type="button" aria-label="Schakel naar donker">🌙</button><button class="dot" data-p="violet" type="button" aria-label="Paars thema"></button><button class="dot" data-p="ocean" type="button" aria-label="Oceaan thema"></button><button class="dot" data-p="sunset" type="button" aria-label="Zonsondergang thema"></button></div></header>
 <main id="top">
 <div class="hero">
-  <div><span class="badge">✨ Gratis · Nederlands · Voor iedereen</span><h1>Speel met<br><em>wiskunde.</em></h1><p>Kraak een code, mik op het doelgetal of oefen tot je vijf antwoorden op rij goed hebt.</p><div class="actions"><a class="button" href="#spelen">Kies een spel</a><a class="button secondary" href="#oefenen">Start met oefenen</a></div><div class="stats"><span><b>4</b> onderwerpen</span><span><b>2</b> spellen</span><span><b>∞</b> opgaven</span></div></div>
+  <div><span class="badge">✨ Gratis · Nederlands · Voor iedereen</span><h1>Online lessen, cursussen en <em>oefeningen</em></h1><p>Leer wiskunde stap voor stap. Bekijk uitgewerkte voorbeelden en oefen op je eigen niveau.</p><div class="actions"><a class="button" href="#onderwerpen">Bekijk de lessen</a><a class="button secondary" href="#oefenen">Start met oefenen</a></div><div class="stats"><span><b>4</b> onderwerpen</span><span><b>2</b> spellen</span><span><b>∞</b> opgaven</span></div></div>
   <div class="art" aria-hidden="true"><div class="orbit"></div><div class="tile inf">∞</div><div class="tile pi">π</div><div class="tile percent">%</div><div class="tile root">√</div><div class="tile plus">+</div></div>
 </div>
 <div class="ticker" aria-hidden="true"><div><span>π</span><span>+</span><span>√</span><span>%</span><span>×</span><span>−</span><span>÷</span><span>=</span><span>x²</span><span>∞</span><span>π</span><span>+</span><span>√</span><span>%</span><span>×</span><span>−</span><span>÷</span><span>=</span><span>x²</span><span>∞</span><span>π</span><span>+</span><span>√</span><span>%</span><span>×</span><span>−</span><span>÷</span><span>=</span><span>x²</span><span>∞</span><span>π</span><span>+</span><span>√</span><span>%</span><span>×</span><span>−</span><span>÷</span><span>=</span><span>x²</span><span>∞</span></div></div>
@@ -108,7 +108,7 @@ header .tools .dot[data-p=violet]{background:#8b6cff}header .tools .dot[data-p=o
  </div>
 </section>
 </main>
-<footer><a class="brand" href="#top">Wis<span>4</span>All</a><span>Wiskunde om te spelen <em>★</em> Voor iedereen</span></footer>
+<footer><a class="brand" href="#top">Wis<span>4</span>All</a><span>Online lessen, cursussen en oefeningen</span></footer>
 <script>
 "use strict";
 const get = id => document.getElementById(id);
