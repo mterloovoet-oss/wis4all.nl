@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Ganzenbord Grafieken</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: spiraalbord (8x8, vakje 0 linksonder, 63 in het midden) links, spelerspaneel rechts; vragen in een kaart erboven */
+:root{
+  --bg:#EAF2F8; --surface:#FFFFFF; --surface2:#F4F8FB; --fg:#1C2A39; --soft:#5A6B7D; --line:#C9D6E2;
+  --sun:#F2B705; --sun-ink:#5B4300; --teal:#0F7F86; --teal-soft:#D5EEF0;
+  --goose:#FFF0B8; --red:#FFDCD8; --red-ink:#B23A31; --pit:#E2DAF7; --pit-ink:#5B46A8;
+  --ok:#1D8A4E; --ok-soft:#DDF3E6; --bad:#C2413A; --bad-soft:#FBE1DE; --glass:#BFE3F2;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  --shadow:0 2px 0 rgba(28,42,57,.08),0 8px 24px rgba(28,42,57,.08);
+}
+:root{color-scheme:light}
+*{box-sizing:border-box}
+[hidden],.overlay[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
+header h1{font-size:clamp(28px,5vw,40px);font-weight:700}
+header h1 span{color:var(--teal)}
+.sub{color:var(--soft);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+/* bord */
+.board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:4px;aspect-ratio:1;max-width:100%;background:var(--surface);padding:8px;border-radius:18px;box-shadow:var(--shadow)}
+.cell{position:relative;border-radius:9px;background:var(--surface2);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;overflow:hidden}
+.cell .num{position:absolute;top:2px;left:5px;font-size:clamp(9px,1.6vw,12px);font-weight:800;color:var(--soft);font-variant-numeric:tabular-nums}
+.cell .ico{font-size:clamp(14px,3vw,24px);line-height:1}
+.cell.lvl2{background:color-mix(in srgb,var(--teal-soft) 55%,var(--surface2))}
+.cell.goose{background:var(--goose)}
+.cell.red{background:var(--red)}
+.cell.red .ico{color:var(--red-ink);font-weight:800;font-family:var(--display)}
+.cell.pit{background:var(--pit)}
+.cell.start{background:var(--teal-soft)}
+.cell.finish{background:var(--sun);border-color:var(--sun)}
+.cell.finish .num{color:var(--sun-ink)}
+.cell.target{outline:3px dashed var(--teal);outline-offset:-3px}
+.pawn{position:absolute;bottom:2px;right:3px;font-size:clamp(18px,3.6vw,30px);line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));transition:transform .2s}
+.pawn.hop{transform:translateY(-6px) scale(1.08)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:13px;color:var(--soft)}
+.legend b{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:4px;border:1px solid var(--line)}
+/* paneel */
+.panel{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.card h3{font-size:18px;margin-bottom:8px}
+.player{display:flex;align-items:center;gap:12px}
+.player .big{font-size:40px;line-height:1}
+.player .nm{font-family:var(--display);font-size:20px;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;text-align:center}
+.stats div{background:var(--surface2);border-radius:10px;padding:6px 4px}
+.stats strong{display:block;font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+.stats span{font-size:11px;color:var(--soft);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.dicebox{display:flex;align-items:center;gap:14px}
+.die{width:64px;height:64px;border-radius:14px;background:var(--surface);border:2px solid var(--fg);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:8px;flex:none}
+.die i{width:11px;height:11px;border-radius:50%;background:var(--fg);place-self:center;visibility:hidden}
+.die.d1 i:nth-child(5),.die.d2 i:nth-child(3),.die.d2 i:nth-child(7),.die.d3 i:nth-child(3),.die.d3 i:nth-child(5),.die.d3 i:nth-child(7){visibility:visible}
+.die.roll{animation:wob .45s ease-in-out}
+@keyframes wob{0%{transform:rotate(0)}30%{transform:rotate(-25deg) scale(1.1)}60%{transform:rotate(20deg)}100%{transform:rotate(0)}}
+button{font-family:var(--body);font-weight:800;font-size:16px;border:0;border-radius:12px;padding:12px 18px;cursor:pointer;color:var(--fg);background:var(--surface2)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.btn-sun{background:var(--sun);color:var(--sun-ink);box-shadow:0 3px 0 color-mix(in srgb,var(--sun) 60%,#000)}
+.btn-teal{background:var(--teal);color:var(--surface)}
+.btn-ghost{background:transparent;border:2px solid var(--line)}
+.log{font-size:14px;color:var(--soft);min-height:42px}
+.log strong{color:var(--fg)}
+.shield{display:inline-block;background:var(--teal-soft);color:var(--teal);font-weight:800;border-radius:999px;padding:2px 10px;font-size:13px}
+.miss{display:flex;flex-wrap:wrap;gap:6px}
+.miss button{padding:4px 10px;font-size:14px;border-radius:8px;background:var(--bad-soft);color:var(--bad)}
+.rules{font-size:14px;color:var(--soft);padding-left:18px;margin:0}
+.rules li{margin-bottom:4px}
+/* overlay + vraag */
+.overlay{position:fixed;inset:0;background:rgba(10,20,30,.55);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;z-index:20;padding-top:calc(env(safe-area-inset-top,0px) + 24px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.qcard{background:var(--surface);border-radius:20px;max-width:680px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:14px}
+.qhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sq{font-family:var(--display);font-weight:700;font-size:15px;background:var(--fg);color:var(--surface);border-radius:999px;padding:3px 12px}
+.tag{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);background:var(--teal-soft);border-radius:999px;padding:4px 10px}
+.tag.deep{color:var(--sun-ink);background:var(--sun)}
+.schrift{display:flex;gap:10px;align-items:flex-start;background:var(--surface2);border-left:4px solid var(--teal);border-radius:8px;padding:8px 12px;font-size:14px}
+.qtext{font-size:17px;max-width:65ch}
+.qtext p{margin:0 0 8px}
+.fig{overflow-x:auto;display:flex;justify-content:center}
+.fig svg{max-width:100%;height:auto}
+.tbl{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:15px;margin:4px 0}
+.tbl caption{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);font-weight:800;padding-bottom:4px}
+.tbl th{text-align:left;font-weight:700;padding:5px 10px 5px 0;border-right:2px solid var(--teal);white-space:nowrap}
+.tbl td{padding:5px 10px;text-align:center;border-right:1px solid var(--line)}
+.tbl tr:first-child th,.tbl tr:first-child td{border-bottom:1px solid var(--line)}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.opts.text{grid-template-columns:minmax(0,1fr)}
+.opt{text-align:left;background:var(--surface2);border:2px solid var(--line);font-weight:700;display:flex;gap:10px;align-items:center;padding:10px 12px;min-width:0}
+.opt .l{font-family:var(--display);flex:none;width:28px;height:28px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:grid;place-items:center;font-size:14px}
+.opt svg{width:100%;height:auto;max-height:120px}
+.opt.sel{border-color:var(--teal);background:var(--teal-soft)}
+.opt.sel .l{background:var(--teal);color:var(--surface);border-color:var(--teal)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);opacity:.7}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.numrow input{font:inherit;font-size:20px;font-weight:800;width:150px;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface2);color:var(--fg)}
+.hints{display:flex;flex-direction:column;gap:8px}
+.hint{background:var(--goose);border-radius:10px;padding:8px 12px;font-size:15px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.fb{border-radius:12px;padding:10px 14px;font-weight:700}
+.fb.ok{background:var(--ok-soft);color:var(--ok)}
+.fb.bad{background:var(--bad-soft);color:var(--bad)}
+.fb .ex{display:block;font-weight:600;color:var(--fg);margin-top:4px}
+.start label{display:block;font-weight:700;font-size:14px;margin-bottom:4px}
+.start input[type=text]{font:inherit;width:100%;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface2);color:var(--fg)}
+.pawns{display:flex;flex-wrap:wrap;gap:8px}
+.pawns button{font-size:28px;padding:6px 10px;border:2px solid transparent}
+.pawns button.sel{border-color:var(--teal);background:var(--teal-soft)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+details.key{margin-top:24px}
+details.key summary{cursor:pointer;font-weight:800;color:var(--soft)}
+.keylist{columns:2 280px;font-size:14px;margin-top:10px}
+.keylist div{break-inside:avoid;padding:3px 0;border-bottom:1px solid var(--line)}
+/* svg-grafieken */
+.gr-grid{stroke:var(--line);stroke-width:1}
+.gr-ax{stroke:var(--fg);stroke-width:1.6;fill:none}
+.gr-t{fill:var(--soft);font-family:var(--body);font-size:11px}
+.gr-tt{fill:var(--fg);font-family:var(--body);font-size:10px;font-weight:800;letter-spacing:.06em}
+.gr-l1{stroke:var(--teal);stroke-width:2.6;fill:none;stroke-linejoin:round}
+.gr-l2{stroke:var(--red-ink);stroke-width:2.6;fill:none;stroke-linejoin:round}
+.gr-d1{fill:var(--teal)} .gr-d2{fill:var(--red-ink)}
+.gg-ax{stroke:var(--fg);stroke-width:1.2;fill:none}
+.gg-l{stroke:var(--red-ink);stroke-width:2.4;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.gg-t{fill:var(--soft);font-family:var(--body);font-size:6.5px}
+.gg-lab{fill:var(--fg);font-family:var(--body);font-size:8px;font-style:italic;font-weight:700}
+.ves{fill:var(--glass);stroke:var(--fg);stroke-width:2;stroke-linejoin:round}
+.vesrow{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.vesrow figure{margin:0;text-align:center;font-size:13px;color:var(--soft);font-weight:700}
+@media (prefers-reduced-motion:reduce){.die.roll{animation:none}.pawn{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="sub">Hoofdstuk 3 · §3.2 Grafieken in assenstelsels</div>
+      <h1>Ganzenbord <span>Grafieken</span></h1>
+    </div>
+    <button class="btn-ghost" id="btnRestart" type="button">Opnieuw beginnen</button>
+  </header>
+
+  <div class="layout">
+    <div>
+      <div class="board" id="board" aria-label="Ganzenbord met 63 vakjes"></div>
+      <div class="legend">
+        <span><b style="background:var(--surface2)"></b>Vakje 1–30: basisvragen</span>
+        <span><b style="background:color-mix(in srgb,var(--teal-soft) 55%,var(--surface2))"></b>Vakje 31–63: toetsniveau</span>
+        <span>🪿 gans: nog eens vooruit</span>
+        <span><b style="background:var(--red)"></b>⬅ 3 vakjes terug</span>
+        <span>🕳 put: terug naar 31</span>
+        <span>🏆 precies op 63 (te ver = terugkaatsen)</span>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="card">
+        <div class="player"><div class="big" id="pPawn">🦊</div><div><div class="nm" id="pName">Speler</div><div class="sub" id="pInfo">Vakje 0</div></div></div>
+        <div class="stats">
+          <div><strong id="sOk">0</strong><span>goed</span></div>
+          <div><strong id="sBad">0</strong><span>fout</span></div>
+          <div><strong id="sStreak">0</strong><span>op rij</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="dicebox">
+          <div class="die d1" id="die" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <button class="btn-sun" id="btnRoll" type="button">🎲 Gooi de dobbelsteen</button>
+        </div>
+        <p class="log" id="log">Gooi om te beginnen. De dobbelsteen geeft 1, 2 of 3.</p>
+        <div id="shieldBox"></div>
+      </div>
+      <div class="card">
+        <h3>😬 Mijn fouten</h3>
+        <div class="miss" id="miss"><span class="log">Nog geen fouten. Vragen die je fout hebt, kun je hier opnieuw oefenen.</span></div>
+      </div>
+      <div class="card">
+        <h3>Spelregels</h3>
+        <ul class="rules">
+          <li>Gooi (1, 2 of 3) en beantwoord de vraag van het vakje waar je op komt.</li>
+          <li>Goed: je mag naar dat vakje. Fout: je krijgt nog één poging. Weer fout: je blijft staan.</li>
+          <li>Werk alles uit in je <strong>schrift</strong>: vakjenummer, tekening of berekening, antwoord.</li>
+          <li>Kom je er niet uit? Gebruik de hints (maximaal 2).</li>
+          <li>5 keer goed op rij: 🛡 3 beurten onkwetsbaar voor rode vakjes en de put.</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <details class="key">
+    <summary>Antwoordenblad voor de docent</summary>
+    <div class="keylist" id="keylist"></div>
+  </details>
+</div>
+
+<div class="overlay" id="startOv">
+  <div class="qcard start">
+    <h2>Doe mee</h2>
+    <p class="qtext" style="margin:0">Oefen §3.2 met het ganzenbord. Vakje 1 tot en met 30 leggen de stof stap voor stap uit. Vanaf vakje 31 krijg je vragen op toetsniveau. Leg je <strong>schrift</strong> en pen klaar.</p>
+    <div class="row2">
+      <div><label for="inName">Je naam</label><input type="text" id="inName" placeholder="bijv. Sam" maxlength="20"></div>
+      <div><label for="inClass">Klas</label><input type="text" id="inClass" placeholder="bijv. 1B" maxlength="10"></div>
+    </div>
+    <div><label>Kies je pion</label><div class="pawns" id="pawnPick"></div></div>
+    <div class="actions"><span></span><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn-ghost" id="btnContinue" type="button" hidden>Verder spelen</button><button class="btn-sun" id="btnStart" type="button">Start het spel!</button></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="qOv" hidden><div class="qcard" id="qCard"></div></div>
+
+<script>
+/* ---------- tekenhulpjes ---------- */
+function lineGraph(o){
+  const W=360,H=250,L=48,R=40,T=34,B=40,pw=W-L-R,ph=H-T-B;
+  const X=x=>L+(x-o.x0)/(o.x1-o.x0)*pw, Y=y=>T+ph-(y-o.y0)/(o.y1-o.y0)*ph;
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${o.title}">`;
+  for(let x=o.x0;x<=o.x1+1e-9;x+=o.xs){s+=`<line class="gr-grid" x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${T+ph}"/><text class="gr-t" x="${X(x)}" y="${T+ph+15}" text-anchor="middle">${o.xf?o.xf(x):x}</text>`}
+  for(let y=o.y0;y<=o.y1+1e-9;y+=o.ys){s+=`<line class="gr-grid" x1="${L}" y1="${Y(y)}" x2="${L+pw}" y2="${Y(y)}"/><text class="gr-t" x="${L-6}" y="${Y(y)+4}" text-anchor="end">${y}</text>`}
+  s+=`<path class="gr-ax" d="M${L} ${T-6} V${T+ph} H${L+pw+6}"/>`;
+  s+=`<text class="gr-tt" x="${L-40}" y="12">${o.title}</text><text class="gr-t" x="${L-40}" y="26">${o.yl}</text><text class="gr-t" x="${L+pw}" y="${H-6}" text-anchor="end">${o.xl}</text>`;
+  o.series.forEach((se,i)=>{const c=i+1;s+=`<polyline class="gr-l${c}" points="${se.p.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>`;
+    se.p.forEach(p=>s+=`<circle class="gr-d${c}" cx="${X(p[0])}" cy="${Y(p[1])}" r="3.2"/>`);
+    if(se.n){const q=se.lp||se.p[se.p.length-1];s+=`<text class="gr-t" style="font-weight:800" x="${X(q[0])+5}" y="${Y(q[1])-6}">${se.n}</text>`}});
+  return s+'</svg>';
+}
+function gg(d,o={}){
+  let s=`<svg viewBox="0 0 122 78" width="${o.w||260}" role="img" aria-label="globale grafiek"><text class="gg-t" x="2" y="6">${o.y||''}</text><g transform="translate(12,10)"><path class="gg-ax" d="M0 -2 V60 H106"/><path class="gg-l" d="${d}"/>`;
+  (o.lab||[]).forEach(l=>s+=`<text class="gg-lab" x="${l[0]}" y="${l[1]}">${l[2]}</text>`);
+  return s+`</g><text class="gg-t" x="118" y="77" text-anchor="end">tijd</text></svg>`;
+}
+const V={
+  cyl:"M18 8 V64 H42 V8",
+  wideBot:"M22 8 L8 64 H52 L38 8",
+  narrowBot:"M8 8 L22 64 H38 L52 8",
+  bol:"M26 4 V21.4 A21 21 0 1 0 34 21.4 V4",
+  zand:"M8 8 L25 36 L8 64 H52 L35 36 L52 8",
+  stepWideBot:"M22 8 V36 H8 V64 H52 V36 H38 V8",
+  stepNarrowBot:"M8 8 V36 H22 V64 H38 V36 H52 V8",
+  klos:"M8 8 V24 H23 V48 H8 V64 H52 V48 H37 V24 H52 V8",
+  dik:"M23 8 V24 H8 V48 H23 V64 H37 V48 H52 V24 H37 V8",
+  erlen:"M25 4 V26 L8 64 H52 L35 26 V4"
+};
+const ves=(k,w=70)=>`<svg viewBox="0 0 60 70" width="${w}" role="img" aria-label="vorm"><path class="ves" d="${V[k]}"/></svg>`;
+const G={ // globale grafieken waterhoogte
+  A:"M5 55 L95 8", B:"M5 55 Q20 10 95 8", C:"M5 55 Q85 53 95 8", D:"M5 55 C8 18, 92 46, 95 6",
+  E:"M5 55 C62 56, 38 6, 95 6", F:"M5 55 L50 45 L95 6", Gg:"M5 55 L50 14 L95 5", H:"M5 55 L35 48 L65 16 L95 9",
+  I:"M5 55 Q55 52 68 26 L80 4", J:"M5 55 L28 24 Q55 10 95 8"
+};
+const wh=k=>gg(G[k],{y:'waterhoogte',w:220});
+function tbl(cap,a,ra,b,rb){return `<table class="tbl"><caption>${cap}</caption><tr><th>${a}</th>${ra.map(v=>`<td>${v}</td>`).join('')}</tr><tr><th>${b}</th>${rb.map(v=>`<td>${v}</td>`).join('')}</tr></table>`}
+
+/* ---------- vaste figuren ---------- */
+const FIG_TEMP=lineGraph({title:'TEMPERATUUR ZATERDAG',yl:'temperatuur in °C',xl:'tijd in uren',x0:6,x1:20,xs:2,y0:0,y1:18,ys:2,series:[{p:[[6,4],[8,6],[10,10],[12,14],[14,16],[16,15],[18,12],[20,8]]}]});
+const FIG_FIETS=lineGraph({title:'FIETSTOCHT MILAN',yl:'afstand in km',xl:'tijd in minuten',x0:0,x1:60,xs:15,y0:0,y1:16,ys:2,series:[{p:[[0,0],[15,4],[30,4],[45,12],[60,16]]}]});
+const tf=x=>['13:00','13:15','13:30','13:45','14:00','14:15','14:30'][x];
+const FIG_SD=lineGraph({title:'FIETSTOCHT SARA EN DAAN',yl:'afstand tot school in km',xl:'tijd',x0:0,x1:6,xs:1,y0:0,y1:12,ys:2,xf:tf,series:[{p:[[0,0],[2,8],[4,8],[6,0]],n:'Sara',lp:[2,8]},{p:[[1,0],[5,12],[6,12]],n:'Daan',lp:[5,12]}]});
+const T_PLANT=tbl('Lengte plantje','dag',[0,1,2,3,4,5,6],'lengte in cm',[2,4,6,9,13,16,18]);
+const T_BABY=tbl('Gewicht baby Noor','dag',[0,1,2,3,4,5,6],'gewicht in gram',[3400,3330,3300,3320,3360,3400,3450]);
+const FIG_ABC=gg("M5 55 L25 35 L45 35 L60 15 L75 40 L95 40",{y:'',w:300,lab:[[11,42,'a'],[33,31,'b'],[54,22,'c'],[70,25,'d'],[84,36,'e']]});
+const T_BAT=tbl('Mobiele telefoon Lotte','aantal uren',[0,2,4,6,8,10,12,14],'batterij in %',[100,93,86,79,72,65,85,78]);
+const T_HART=tbl('Training Jesse','tijd in minuten',[0,1,2,3,4,5,6,7,8],'hartslag',[70,145,120,100,150,125,100,150,130]);
+const T_ZON=tbl('Zonnebloem Fenna','aantal weken',[0,1,2,3,4,5,6],'hoogte in cm',[10,18,30,50,80,105,120]);
+const FIG_HIKE=gg("M5 55 L18 35 L30 35 L45 12 L60 40 L75 22 L95 55",{y:'hoogte',w:300});
+const FIG_SCOOT=gg("M5 55 L15 20 L35 20 L42 28 L48 20 L65 20 L70 55 L80 55 L95 15",{y:'snelheid',w:320,lab:[[5,34,'a'],[23,17,'b'],[37,31,'c'],[47,30,'d'],[55,17,'e'],[70,38,'f'],[73,52,'g'],[89,30,'h']]});
+
+const SCHRIFT=true;
+/* ---------- de 63 vragen ---------- */
+const Q=[null,
+/* A: aflezen */
+{c:'Basis · grafieken aflezen',t:'num',fig:FIG_TEMP,q:'<p>Hierboven zie je de temperatuur op zaterdag. Op de <b>horizontale as</b> staat de tijd, op de <b>verticale as</b> de temperatuur.</p><p>Hoeveel graden was het om 12 uur?</p>',ok:14,u:'°C',h:['Zoek 12 op de horizontale as en ga recht omhoog tot je de grafiek raakt.','Ga vanaf dat punt horizontaal naar links naar de verticale as en lees het getal af.'],x:'Om 12 uur ligt het punt op hoogte 14. Het was 14 °C.'},
+{c:'Basis · grafieken aflezen',t:'mc',fig:FIG_TEMP,q:'<p>Om hoe laat was het het warmst?</p>',o:['Om 14 uur','Om 12 uur','Om 16 uur','Om 20 uur'],ok:0,h:['Het warmst is waar de grafiek het hoogst is.','Zoek het hoogste punt en ga recht naar beneden naar de horizontale as.'],x:'Het hoogste punt (16 °C) ligt bij 14 uur.'},
+{c:'Basis · grafieken aflezen',t:'num',fig:FIG_TEMP,q:'<p>Hoeveel graden steeg de temperatuur van 8 uur tot 12 uur? Schrijf beide temperaturen in je schrift.</p>',ok:8,u:'graden',h:['Lees eerst de temperatuur om 8 uur af en daarna om 12 uur.','Om 8 uur was het 6 °C. Trek dat af van de temperatuur om 12 uur.'],x:'14 − 6 = 8 graden.'},
+{c:'Basis · grafieken aflezen',t:'mc',fig:FIG_TEMP,q:'<p>Bij elke as staat waar hij over gaat. Wat staat er bij de <b>verticale</b> as?</p>',o:['temperatuur in °C','tijd in uren','temperatuur zaterdag','graden per uur'],ok:0,h:['De verticale as is de as die rechtop staat.','Kijk naar de tekst die bovenaan bij die as staat, onder de titel.'],x:'Bij de verticale as staat "temperatuur in °C". "Temperatuur zaterdag" is de titel van de figuur.'},
+{c:'Basis · grafieken aflezen',t:'mc',fig:FIG_TEMP,q:'<p>Om hoe laat was het 12 °C? Let op: er zijn twee antwoorden.</p>',o:['Om 11 uur en om 18 uur','Om 12 uur en om 18 uur','Alleen om 18 uur','Om 10 uur en om 20 uur'],ok:0,h:['Zoek 12 op de verticale as en ga horizontaal naar rechts. Je raakt de grafiek twee keer.','Ga vanaf beide punten recht naar beneden. Het eerste punt ligt precies tussen 10 en 12 uur.'],x:'De lijn op 12 °C raakt de grafiek om 11 uur (stijgend) en om 18 uur (dalend).'},
+{c:'Basis · grafieken aflezen',t:'num',fig:FIG_TEMP,q:'<p>De afstand tussen twee lijnen van het rooster noemen we een <b>hokje</b>. Hoeveel graden is één hokje op de verticale as?</p>',ok:2,u:'graden',h:['Kijk naar de getallen langs de verticale as: 0, 2, 4, …','Met hoeveel gaan de getallen omhoog bij elk hokje?'],x:'De getallen gaan 0, 2, 4, 6 … dus één hokje is 2 graden. Dat heet de verdeling van de as.'},
+{c:'Basis · grafieken aflezen',t:'num',fig:FIG_FIETS,q:'<p>Milan maakt een fietstocht. De grafiek laat zien hoeveel km hij al gefietst heeft.</p><p>Hoeveel km had Milan gefietst na 15 minuten?</p>',ok:4,u:'km',h:['Zoek 15 op de horizontale as (tijd in minuten).','Ga omhoog naar de grafiek en dan naar links. Eén hokje is 2 km.'],x:'Na 15 minuten zit de grafiek op 4 km.'},
+{c:'Basis · grafieken aflezen',t:'num',fig:FIG_FIETS,q:'<p>Milan heeft een tijdje stilgestaan. Hoeveel minuten stond hij stil?</p>',ok:15,u:'minuten',h:['Als hij stilstaat, komen er geen km bij. Hoe ziet de grafiek er dan uit?','Zoek het stuk waar de grafiek horizontaal loopt. Van welke tijd tot welke tijd is dat?'],x:'Van 15 tot 30 minuten blijft de afstand 4 km. Hij stond 15 minuten stil.'},
+{c:'Basis · grafieken aflezen',t:'num',fig:FIG_FIETS,q:'<p>Hoeveel km heeft Milan in totaal gefietst?</p>',ok:16,u:'km',h:['Kijk naar het laatste punt van de grafiek.','Ga vanaf het laatste punt horizontaal naar de verticale as.'],x:'Het laatste punt ligt op 16 km.'},
+{c:'Basis · grafieken aflezen',t:'mc',fig:FIG_FIETS,q:'<p>In welk kwartier fietste Milan het snelst? Schrijf voor elk kwartier in je schrift hoeveel km erbij kwam.</p>',o:['Van 30 tot 45 minuten','Van 0 tot 15 minuten','Van 15 tot 30 minuten','Van 45 tot 60 minuten'],ok:0,h:['Hoe meer km erbij komen in een kwartier, hoe sneller hij fietst.','Het stuk waar de grafiek het steilst omhoog gaat, is het snelste stuk.'],x:'Van 30 tot 45 minuten kwam er 12 − 4 = 8 km bij. Daar is de grafiek het steilst.'},
+/* B: tabel naar grafiek */
+{c:'Basis · van tabel naar grafiek',t:'mc',fig:T_PLANT,q:'<p>Je gaat een grafiek tekenen bij deze tabel. Welke rij komt op de <b>horizontale</b> as?</p>',o:['De bovenste rij: dag','De onderste rij: lengte in cm','Allebei','Dat maakt niet uit'],ok:0,h:['Kijk in het werkschema van theorie B, stap 1.','Stap 1: teken een horizontale as met de gegevens van de bovenste rij.'],x:'De bovenste rij (dag) komt op de horizontale as, de onderste rij (lengte) op de verticale as.'},
+{c:'Basis · van tabel naar grafiek',t:'num',fig:T_PLANT,q:'<p>In je schrift neem je op de verticale as <b>1 hokje = 2 cm</b>. Hoeveel hokjes moet de verticale as minstens lang zijn?</p>',ok:9,u:'hokjes',h:['Zoek het grootste getal in de onderste rij.','Het grootste getal is 18. Hoeveel stappen van 2 heb je nodig om bij 18 te komen?'],x:'18 : 2 = 9 hokjes.'},
+{c:'Basis · van tabel naar grafiek',t:'num',fig:T_PLANT,q:'<p>Op de horizontale as neem je <b>1 hokje = 1 dag</b>. Je begint bij dag 0. Hoeveel hokjes lang wordt de horizontale as?</p>',ok:6,u:'hokjes',h:['Tel niet de getallen, maar de stappen tussen de getallen.','Van 0 naar 6 is 6 stappen van 1.'],x:'Van dag 0 tot dag 6 zijn 6 hokjes. (Er staan 7 getallen, maar maar 6 stappen.)'},
+{c:'Basis · van tabel naar grafiek',t:'mc',fig:T_PLANT,q:'<p>Wat schrijf je bij de assen van je grafiek? (Werkschema stap 3)</p>',o:['Waar de as over gaat: "dag" en "lengte in cm"','Alleen de getallen','Je naam en de datum','Alleen een titel'],ok:0,h:['Kijk in het werkschema van theorie B, stap 3.','Bij elke as zet je de informatie uit de eerste kolom van de tabel.'],x:'Bij de assen zet je waar ze over gaan (dag, lengte in cm). De titel zet je boven de figuur.'},
+{c:'Basis · van tabel naar grafiek',t:'mc',q:'<p>In stap 4 van het werkschema staat dat je een <b>vloeiende kromme</b> tekent. Wat is dat?</p>',o:['Een mooi gebogen lijn zonder hoeken door alle punten','Losse punten zonder lijn','Rechte stukjes met hoeken tussen de punten','Een rechte lijn van het eerste naar het laatste punt'],ok:0,h:['Kijk naar de twee plaatjes bij theorie B.','Bij "niet vloeiend" zie je scherpe hoeken.'],x:'Een vloeiende kromme gaat zonder hoeken, mooi rond, door alle punten.'},
+{c:'Basis · van tabel naar grafiek',t:'mc',fig:T_PLANT,q:'<p>Teken in je schrift de grafiek bij de tabel. Tussen welke twee dagen groeide het plantje het meest?</p>',o:['Tussen dag 3 en dag 4','Tussen dag 5 en dag 6','Tussen dag 0 en dag 1','Tussen dag 2 en dag 3'],ok:0,h:['Bereken per dag hoeveel cm erbij komt: 4 − 2, 6 − 4, …','In de grafiek is dat het steilste stuk.'],x:'De groei per dag is 2, 2, 3, 4, 3, 2. Tussen dag 3 en 4 groeide hij 4 cm, het meest.'},
+{c:'Basis · van tabel naar grafiek',t:'mc',q:'<p>Soms teken je onderaan de verticale as een <b>scheurlijn</b> (een zigzag). Waarom doe je dat?</p>',o:['Zodat de as niet bij 0 hoeft te beginnen en niet te lang wordt','Omdat de grafiek daar daalt','Om te laten zien dat je een fout hebt gemaakt','Omdat de getallen negatief zijn'],ok:0,h:['Denk aan opgave 23: het gewicht van Otto was steeds rond de 3000 gram.','Met een scheurlijn laat je een stuk van de as weg.'],x:'Met een scheurlijn laat je een stuk van de as weg. Dan begint de as bijvoorbeeld bij 3200 en wordt hij niet te lang.'},
+{c:'Basis · van tabel naar grafiek',t:'num',fig:T_BABY,q:'<p>Je tekent een grafiek bij deze tabel. Onder de scheurlijn begint de verticale as bij <b>3200 gram</b>. Je neemt 1 hokje = 50 gram. Hoeveel hokjes moet je van 3200 tot 3450 gram?</p>',ok:5,u:'hokjes',h:['Hoeveel gram zit er tussen 3200 en 3450?','Dat zijn 250 gram. Deel door 50.'],x:'3450 − 3200 = 250 gram. 250 : 50 = 5 hokjes.'},
+{c:'Basis · van tabel naar grafiek',t:'num',fig:T_BABY,q:'<p>Na hoeveel dagen heeft Noor haar geboortegewicht weer bereikt?</p>',ok:5,u:'dagen',h:['Het geboortegewicht is het gewicht op dag 0.','Zoek in de tabel wanneer het gewicht weer 3400 gram is.'],x:'Op dag 0 woog ze 3400 gram. Op dag 5 is dat weer zo.'},
+{c:'Basis · van tabel naar grafiek',t:'num',fig:T_BABY,q:'<p>Hoeveel gram is Noor na de geboorte het meest afgevallen?</p>',ok:100,u:'gram',h:['Zoek het laagste gewicht in de tabel.','Het laagste gewicht is 3300 gram. Vergelijk dat met dag 0.'],x:'3400 − 3300 = 100 gram.'},
+/* C: globale grafieken */
+{c:'Basis · globale grafieken',t:'mc',q:'<p>Wat is een <b>globale grafiek</b>?</p>',o:['Een grafiek zonder getallen langs de assen, het gaat om het verloop','Een grafiek over de hele wereld','Een grafiek met heel veel getallen','Een grafiek die altijd stijgt'],ok:0,h:['Lees de blauwe tekst bij theorie C.','Bij de assen staat wel waar het over gaat, maar meestal geen getallen.'],x:'Bij een globale grafiek gaat het om het verloop: stijgen, dalen of constant. Er staan meestal geen getallen bij.'},
+{c:'Basis · globale grafieken',t:'mc',fig:FIG_ABC,q:'<p>Welke stukken van deze grafiek zijn <b>stijgend</b>?</p>',o:['a en c','b en e','alleen d','a, c en d'],ok:0,h:['Stijgend betekent: de grafiek loopt omhoog als je van links naar rechts kijkt.','Lees altijd van links naar rechts, zoals bij een zin.'],x:'Stuk a en stuk c lopen omhoog.'},
+{c:'Basis · globale grafieken',t:'mc',fig:FIG_ABC,q:'<p>Welk stuk van deze grafiek is <b>dalend</b>?</p>',o:['d','b','e','a'],ok:0,h:['Dalend betekent: de grafiek loopt omlaag van links naar rechts.','Er is maar één stuk dat naar beneden gaat.'],x:'Alleen stuk d loopt omlaag.'},
+{c:'Basis · globale grafieken',t:'mc',fig:FIG_ABC,q:'<p>Stuk b en stuk e lopen horizontaal. Hoe heet zo\'n stuk?</p>',o:['constant','stijgend','dalend','vloeiend'],ok:0,h:['Kijk naar het kader onderaan theorie C.','Horizontaal betekent: er verandert niets.'],x:'Een horizontaal stuk heet constant.'},
+{c:'Basis · globale grafieken',t:'mc',q:'<p>Je bekijkt een grafiek van de <b>snelheid</b> van een fietser. Hoe zie je dat de fietser stilstaat?</p>',o:['De grafiek ligt op de horizontale as (snelheid 0)','De grafiek loopt horizontaal, ergens boven de as','De grafiek daalt','De grafiek stijgt steil'],ok:0,h:['Als je stilstaat, wat is dan je snelheid?','Snelheid 0 ligt helemaal onderaan, op de horizontale as.'],x:'Stilstaan is snelheid 0. Dan ligt de grafiek op de horizontale as. Een horizontaal stuk hoger op betekent: steeds even snel.'},
+{c:'Basis · globale grafieken',t:'mc',q:'<p>Nu bekijk je een grafiek van de <b>afstand</b> die een fietser heeft afgelegd. Hoe zie je hier dat de fietser stilstaat?</p>',o:['De grafiek loopt horizontaal (constant)','De grafiek ligt op de horizontale as','De grafiek daalt','De grafiek stijgt'],ok:0,h:['Als je stilstaat, komt er geen afstand bij.','Denk aan Milan in vakje 8.'],x:'Bij stilstaan blijft de afstand gelijk: de grafiek loopt horizontaal. Let goed op wat er op de verticale as staat!'},
+{c:'Basis · globale grafieken',t:'mc',q:'<p>In een afstand-tijdgrafiek wordt een stijgend stuk ineens <b>steiler</b>. Wat betekent dat?</p>',o:['De fietser gaat sneller','De fietser gaat langzamer','De fietser staat stil','De fietser keert om'],ok:0,h:['Steiler: in dezelfde tijd komt er meer afstand bij.','Meer afstand in dezelfde tijd betekent …'],x:'Steiler betekent meer km in dezelfde tijd, dus sneller.'},
+{c:'Basis · globale grafieken',t:'mc',q:'<p>Emma loopt van huis naar de bushalte. Daar wacht ze even. Daarna gaat ze met de bus naar school. Welke globale grafiek past bij de <b>afstand tot huis</b>?</p>',o:[gg("M5 55 L35 45 L55 45 L95 8",{y:'afstand'}),gg("M5 55 L35 20 L55 20 L95 8",{y:'afstand'}),gg("M5 55 L50 30 L95 8",{y:'afstand'}),gg("M5 55 L35 45 L55 45 L95 55",{y:'afstand'})],ok:0,key:'langzaam stijgen, constant, steil stijgen',h:['Er zijn drie delen: lopen, wachten, bus. Welk deel is horizontaal?','Lopen gaat langzaam (minder steil), de bus gaat snel (steil).'],x:'Lopen: rustig stijgend. Wachten: constant. Bus: steil stijgend.'},
+{c:'Basis · globale grafieken',t:'mc',fig:`<div class="vesrow">${ves('cyl',80)}</div>`,q:'<p>Een cilinder (rechte buis) wordt gevuld met een <b>constante stroom</b> water. Elke seconde komt er evenveel water bij. Welke grafiek hoort bij de waterhoogte?</p>',o:[wh('A'),wh('B'),wh('C'),wh('E')],ok:0,key:'rechte lijn',h:['De cilinder is overal even breed.','Even breed → elke seconde stijgt het water evenveel → wat voor lijn is dat?'],x:'De cilinder is overal even breed. Het water stijgt dus steeds even snel: een rechte lijn.'},
+{c:'Basis · globale grafieken',t:'mc',fig:`<div class="vesrow">${ves('narrowBot',80)}</div>`,q:'<p>Deze vaas is onder smal en boven breed. Hij wordt gevuld met een constante stroom water. Welke grafiek hoort bij de waterhoogte?</p>',o:[wh('B'),wh('C'),wh('A'),wh('D')],ok:0,key:'eerst snel, dan langzaam stijgen',h:['Waar het smal is, stijgt het water snel. Waar het breed is, langzaam.','De vaas is eerst smal (snel stijgen = steil) en wordt steeds breder (langzamer = minder steil).'],x:'Onderin smal: het water stijgt snel. Bovenin breed: het water stijgt langzaam. De grafiek begint steil en wordt steeds minder steil.'},
+/* ---------- toetsniveau ---------- */
+{c:'Toetsniveau',t:'mc',fig:T_BAT,q:'<p>Lotte heeft haar telefoon \'s nachts opgeladen. Vanaf 7 uur \'s ochtends noteert ze elke twee uur het batterijpercentage. Tussen welke tijdstippen heeft ze haar telefoon nog een keer opgeladen?</p>',o:['Tussen 10 en 12 uur','Tussen 0 en 2 uur','Tussen 12 en 14 uur','Tussen 8 en 10 uur'],ok:0,h:['Bij opladen wordt het percentage groter.','Zoek in de tabel waar het getal stijgt.'],x:'Van 65% naar 85%: tussen 10 en 12 uur stijgt het percentage, dus toen laadde ze op.'},
+{c:'Toetsniveau',t:'num',fig:T_BAT,q:'<p>In de eerste 10 uur daalt het percentage steeds evenveel. Met hoeveel procent daalt het per 2 uur?</p>',ok:7,u:'%',h:['Vergelijk twee getallen die naast elkaar staan.','100 − 93 = ?'],x:'100 → 93 → 86 → … : elke 2 uur 7% minder.'},
+{c:'Toetsniveau',t:'num',fig:T_BAT,q:'<p>Stel dat Lotte <b>niet</b> had opgeladen en het percentage bleef evenveel dalen. Hoeveel procent had haar telefoon dan na 14 uur?</p>',ok:51,u:'%',h:['Na 10 uur was het 65%. Hoeveel keer 2 uur zit er tussen 10 en 14 uur?','Twee keer 7% eraf.'],x:'65 − 7 − 7 = 51%.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="vesrow">${ves('wideBot',80)}</div>`,q:'<p>Deze vorm is onder breed en boven smal. Hij wordt gevuld met een constante stroom water. Welke globale grafiek past bij de waterhoogte?</p>',o:[wh('C'),wh('B'),wh('A'),wh('E')],ok:0,key:'eerst langzaam, dan snel stijgen',h:['Breed = water stijgt langzaam, smal = water stijgt snel.','De grafiek begint dus vlak en wordt steeds steiler.'],x:'Onder breed: langzaam stijgen (vlak). Naar boven toe smaller: steeds sneller (steiler).'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="vesrow">${ves('erlen',80)}</div>`,q:'<p>Dit is een erlenmeyer: onder breed, naar boven steeds smaller, en bovenop een rechte smalle hals. Welke grafiek past bij de waterhoogte?</p>',o:[wh('I'),wh('C'),wh('J'),wh('A')],ok:0,key:'langzaam → steeds sneller (kromme), daarna rechte steile lijn',h:['Verdeel de vorm in twee delen: het schuine deel en de rechte hals.','In de hals is de vorm overal even breed: daar wordt de grafiek een rechte lijn.'],x:'Het schuine deel wordt smaller: de grafiek wordt steeds steiler. In de rechte hals stijgt het water steeds even snel: een steile rechte lijn.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="vesrow">${ves('bol',80)}</div>`,q:'<p>Deze bolle fles wordt gevuld met een constante stroom water. Welke grafiek past bij de waterhoogte?</p>',o:[wh('D'),wh('E'),wh('A'),wh('B')],ok:0,key:'snel – langzaam – snel',h:['Kijk hoe breed de fles is: onderaan, in het midden en bovenaan.','Onder smal (snel), midden breed (langzaam), boven weer smal (snel).'],x:'Onderin is de bol smal: snel. In het midden is hij het breedst: langzaam. Daarna weer smal: snel.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="vesrow">${ves('zand',80)}</div>`,q:'<p>Deze vorm is onder breed, in het midden smal en boven weer breed. Welke grafiek past bij de waterhoogte bij een constante stroom water?</p>',o:[wh('E'),wh('D'),wh('C'),wh('A')],ok:0,key:'langzaam – snel – langzaam',h:['Breed = langzaam, smal = snel.','Het water stijgt eerst langzaam, in het smalle midden snel en daarna weer langzaam.'],x:'Breed-smal-breed geeft langzaam-snel-langzaam: vlak, steil, vlak.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="vesrow">${ves('stepWideBot',80)}</div>`,q:'<p>Deze vorm bestaat uit twee cilinders: onder een brede, boven een smalle. Welke grafiek past bij de waterhoogte?</p>',o:[wh('F'),wh('Gg'),wh('C'),wh('A')],ok:0,key:'twee rechte stukken: eerst minder steil, dan steiler',h:['Een cilinder geeft een rechte lijn. Je krijgt dus twee rechte stukken.','Welk stuk is steiler: bij de brede of bij de smalle cilinder?'],x:'Brede cilinder: rechte lijn, niet zo steil. Smalle cilinder: rechte lijn, steiler. Geen kromme, want de wanden zijn recht.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="vesrow">${ves('stepNarrowBot',80)}</div>`,q:'<p>Nu is de smalle cilinder onder en de brede boven. Welke grafiek past bij de waterhoogte?</p>',o:[wh('Gg'),wh('F'),wh('B'),wh('A')],ok:0,key:'twee rechte stukken: eerst steil, dan minder steil',h:['Weer twee rechte stukken.','Smal onder = eerst steil.'],x:'Eerst de smalle cilinder: steil. Daarna de brede: minder steil. Beide stukken zijn recht.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="fig">${wh('H')}</div>`,q:'<p>Andersom! Hierboven zie je de grafiek van de waterhoogte. Bij welke vorm hoort deze grafiek?</p>',o:[ves('klos',70),ves('dik',70),ves('cyl',70),ves('stepWideBot',70)],ok:0,key:'breed – smal – breed (klos)',h:['De grafiek bestaat uit drie rechte stukken. Dus drie cilinders.','Vlak = breed, steil = smal. De grafiek is vlak, steil, vlak.'],x:'Vlak-steil-vlak betekent breed-smal-breed: de klos.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Twee precies dezelfde cilinders P en Q worden gevuld. In P stroomt het water <b>twee keer zo snel</b> als in Q. Wat zie je als je de grafieken van de waterhoogte in één assenstelsel tekent?</p>',o:['De grafiek van P is steiler dan die van Q','De grafiek van P is minder steil dan die van Q','De grafieken zijn even steil','De grafiek van P is gebogen, die van Q recht'],ok:0,h:['Bij P komt er per seconde twee keer zoveel water bij.','Dan stijgt het water in P ook twee keer zo snel.'],x:'In P stijgt het water twee keer zo snel, dus de rechte lijn van P is steiler. Beide zijn recht, want de cilinders zijn overal even breed.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Tim fietst in een rustig tempo naar de sportclub. Bij een stoplicht moet hij wachten. Daarna fietst hij in een hoog tempo verder. Welke globale grafiek past bij zijn <b>snelheid</b>?</p>',o:[gg("M5 55 L15 32 L40 32 L48 55 L60 55 L70 12 L95 12",{y:'snelheid'}),gg("M5 55 L15 12 L40 12 L48 55 L60 55 L70 32 L95 32",{y:'snelheid'}),gg("M5 55 L15 32 L45 32 L58 12 L95 12",{y:'snelheid'}),gg("M5 55 L40 35 L60 35 L95 5",{y:'snelheid'})],ok:0,key:'rustig constant, naar 0, wachten op 0, hoog constant',h:['Bij wachten is de snelheid 0. Waar ligt de grafiek dan?','Rustig tempo = lage horizontale lijn, hoog tempo = hoge horizontale lijn.'],x:'Eerst constant op een lage snelheid, dan omlaag naar 0, even op 0 (wachten) en daarna constant op een hoge snelheid.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Dezelfde tocht van Tim: rustig fietsen, wachten bij het stoplicht, snel fietsen. Welke globale grafiek past nu bij de <b>afstand</b> die hij heeft afgelegd?</p>',o:[gg("M5 55 L45 35 L60 35 L95 5",{y:'afstand'}),gg("M5 55 L45 15 L60 15 L95 5",{y:'afstand'}),gg("M5 55 L15 32 L40 32 L48 55 L60 55 L70 12 L95 12",{y:'afstand'}),gg("M5 55 L45 35 L60 55 L95 5",{y:'afstand'})],ok:0,key:'niet steil stijgen, constant, steil stijgen',h:['Bij een afstandgrafiek is stilstaan: horizontaal (de afstand blijft gelijk).','Rustig = minder steil, snel = steiler.'],x:'De afstand stijgt eerst rustig, blijft gelijk bij het wachten en stijgt daarna steil.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="fig">${gg("M5 55 L35 15 L55 15 L90 55",{y:'afstand tot huis',w:280})}</div>`,q:'<p>Deze globale grafiek gaat over de <b>afstand tot huis</b> van een wandelaar. Wat betekent het dalende stuk aan het eind?</p>',o:['De wandelaar loopt terug naar huis','De wandelaar loopt langzamer','De wandelaar loopt bergaf','De wandelaar staat stil'],ok:0,h:['Kijk wat er op de verticale as staat: afstand tot huis.','Als de afstand tot huis kleiner wordt, kom je dichter bij …'],x:'De afstand tot huis wordt kleiner: hij loopt terug naar huis. De grafiek is geen tekening van een berg!'},
+{c:'Toetsniveau',t:'num',fig:FIG_SD,q:'<p>Sara fietst van school naar een boerderij, blijft daar even en fietst terug. Daan vertrekt later van school en fietst dezelfde weg. Hoeveel km was Sara van school toen Daan vertrok?</p>',ok:4,u:'km',h:['Zoek eerst op de horizontale as hoe laat Daan vertrok.','Daan vertrekt om 13:15. Waar is de grafiek van Sara dan?'],x:'Daan vertrekt om 13:15. Sara is dan halverwege 0 en 8 km: 4 km.'},
+{c:'Toetsniveau',t:'num',fig:FIG_SD,q:'<p>Hoe vaak komen Sara en Daan elkaar onderweg tegen (of haalt de een de ander in)?</p>',ok:1,u:'keer',h:['Elkaar passeren = op hetzelfde moment even ver van school = de grafieken snijden elkaar.','Tel de snijpunten. Het vertrekpunt van Daan om 13:15 telt niet: Sara is dan al weg.'],x:'De grafieken snijden elkaar één keer, rond 13:55, als Sara bij de boerderij is.'},
+{c:'Toetsniveau',t:'num',fig:FIG_SD,q:'<p>Hoeveel km zitten Sara en Daan om 14:15 van elkaar af?</p>',ok:8,u:'km',h:['Lees voor allebei de afstand tot school af om 14:15.','Sara: halverwege 8 en 0 → 4 km. Daan: 12 km.'],x:'Daan zit op 12 km, Sara op 4 km. 12 − 4 = 8 km.'},
+{c:'Toetsniveau',t:'num',fig:FIG_SD,q:'<p>Hoeveel km heeft Sara in totaal gefietst?</p>',ok:16,u:'km',h:['Ze fietst heen én terug.','8 km heen, en terug?'],x:'8 km heen + 8 km terug = 16 km.'},
+{c:'Toetsniveau',t:'num',fig:T_HART,q:'<p>Jesse loopt een minuut hard en wandelt dan tot zijn hartslag weer 100 is. Daarna loopt hij weer een minuut hard, enzovoort. Hoeveel keer heeft Jesse in deze 8 minuten hardgelopen?</p>',ok:3,u:'keer',h:['Bij hardlopen gaat de hartslag omhoog.','Tel hoe vaak de hartslag in de tabel stijgt.'],x:'De hartslag stijgt van 0→1, 3→4 en 6→7 minuten: 3 keer hardgelopen.'},
+{c:'Toetsniveau',t:'num',fig:T_HART,q:'<p>Hoeveel minuten wandelt Jesse steeds voordat zijn hartslag weer 100 is?</p>',ok:2,u:'minuten',h:['Kijk na een hardloopminuut: van 145 terug naar 100.','Van minuut 1 tot minuut 3.'],x:'Van 145 (minuut 1) naar 100 (minuut 3): 2 minuten wandelen.'},
+{c:'Toetsniveau',t:'num',fig:T_HART,q:'<p>Je tekent de grafiek. De verticale as begint met een scheurlijn bij <b>60</b>, en 1 hokje = 10 slagen. Hoeveel hokjes boven het begin ligt het hoogste punt van de grafiek?</p>',ok:9,u:'hokjes',h:['Wat is de hoogste hartslag in de tabel?','150 − 60 = 90. Deel door 10.'],x:'Hoogste hartslag 150. (150 − 60) : 10 = 9 hokjes.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Iris laat het bad vollopen. Als het vol genoeg is, draait ze de kraan dicht en stapt ze in bad. Na een tijdje stapt ze eruit en trekt ze de stop eruit. Welke grafiek past bij de <b>waterhoogte</b>?</p>',o:[gg("M5 55 L35 35 L36 25 L60 25 L61 35 L90 55 L95 55",{y:'waterhoogte'}),gg("M5 55 L35 35 L60 35 L90 55 L95 55",{y:'waterhoogte'}),gg("M5 55 L35 35 L36 45 L60 45 L61 35 L90 55 L95 55",{y:'waterhoogte'}),gg("M5 55 L50 15 L95 55",{y:'waterhoogte'})],ok:0,key:'stijgen, sprong omhoog (instappen), constant, sprong omlaag (uitstappen), dalen',h:['Wat gebeurt er met het water als Iris in bad stapt?','Instappen: het water gaat in één keer omhoog. Uitstappen: in één keer omlaag.'],x:'Vollopen: stijgen. Instappen: sprong omhoog. In bad liggen: constant. Uitstappen: sprong omlaag. Stop eruit: dalen tot 0.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Je zet een kop hete thee neer. De thee koelt eerst snel af en daarna steeds langzamer, tot hij op kamertemperatuur is. Welke grafiek past bij de <b>temperatuur</b>?</p>',o:[gg("M5 8 Q15 50 95 50",{y:'temperatuur'}),gg("M5 8 L95 52",{y:'temperatuur'}),gg("M5 8 Q85 10 95 52",{y:'temperatuur'}),gg("M5 55 Q15 10 95 8",{y:'temperatuur'})],ok:0,key:'eerst snel dalen, dan steeds langzamer, eindigt constant',h:['Snel afkoelen = steil dalen.','Steeds langzamer = steeds minder steil, tot de grafiek bijna horizontaal loopt.'],x:'Eerst steil omlaag, daarna steeds minder steil. Op kamertemperatuur blijft de temperatuur constant.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Welke globale grafiek past bij de <b>lengte</b> van een mens van 0 tot 40 jaar?</p>',o:[gg("M5 50 Q35 22 60 14 L95 14",{y:'lengte'}),gg("M5 50 L95 8",{y:'lengte'}),gg("M5 50 L45 50 L95 10",{y:'lengte'}),gg("M5 50 Q40 10 95 50",{y:'lengte'})],ok:0,key:'stijgend, daarna constant',h:['Groei je na je twintigste nog door?','Eerst stijgen, daarna …'],x:'Tot ongeveer 20 jaar groei je (stijgend), daarna blijft je lengte gelijk (constant).'},
+{c:'Toetsniveau',t:'num',fig:`<div class="fig">${FIG_HIKE}</div>`,q:'<p>Dit is de globale grafiek van de hoogte tijdens een bergwandeling. Hoe vaak stijgt de wandelaar?</p>',ok:3,u:'keer',h:['Lees van links naar rechts en tel de stukken die omhoog lopen.','Een horizontaal stuk tussen twee stijgende stukken telt niet als stijgen.'],x:'Er zijn drie stijgende stukken.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="fig">${FIG_HIKE}</div>`,q:'<p>Bij welk stuk blijft de hoogte even gelijk, en hoe zie je dat?</p>',o:['Na de eerste klim: de grafiek loopt daar horizontaal','Op de top: daar is de grafiek het hoogst','Aan het eind: daar daalt de grafiek','Nergens: de grafiek gaat steeds op en neer'],ok:0,h:['Hoogte gelijk = constant.','Constant = horizontaal stuk.'],x:'Na de eerste klim loopt de grafiek horizontaal: de hoogte blijft gelijk.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="fig">${FIG_SCOOT}</div>`,q:'<p>Dit is de globale grafiek van de <b>snelheid</b> van een scooter. Bij welk stuk staat de scooter stil?</p>',o:['g','b','e','c'],ok:0,h:['Stilstaan = snelheid 0.','Snelheid 0 ligt op de horizontale as.'],x:'Bij stuk g ligt de grafiek op de horizontale as: snelheid 0.'},
+{c:'Toetsniveau',t:'mc',fig:`<div class="fig">${FIG_SCOOT}</div>`,q:'<p>De bestuurder moest één keer hard remmen en één keer afremmen voor een bocht. Welk stuk hoort bij <b>hard remmen</b>?</p>',o:['f','c','a','h'],ok:0,h:['Remmen = snelheid daalt.','Hard remmen = snelheid daalt heel snel = steil dalen.'],x:'Stuk f daalt steil naar 0: hard remmen. Stuk c daalt een klein beetje: afremmen voor de bocht.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Jens maakt een fietstocht en neemt onderweg <b>twee keer</b> een korte pauze. Hij fietst steeds even snel. Welke grafiek past bij de <b>afgelegde afstand</b>?</p>',o:[gg("M5 55 L25 42 L35 42 L60 25 L70 25 L95 8",{y:'afstand'}),gg("M5 55 L15 25 L25 25 L30 55 L40 55 L45 25 L60 25 L65 55 L75 55 L80 25 L95 25",{y:'afstand'}),gg("M5 55 L40 35 L55 35 L95 8",{y:'afstand'}),gg("M5 55 L25 40 L35 48 L60 25 L70 33 L95 8",{y:'afstand'})],ok:0,key:'stijgen, constant, stijgen, constant, stijgen (gelijke steilheid)',h:['Pauze = de afstand blijft gelijk = horizontaal stuk.','Tel de horizontale stukken: het moeten er twee zijn. Tijdens een pauze kan de afstand niet kleiner worden.'],x:'Stijgen – constant – stijgen – constant – stijgen. De stijgende stukken zijn even steil, want hij fietst steeds even snel.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Een kaars brandt steeds even snel op. Welke grafiek past bij de <b>lengte van de kaars</b>?</p>',o:[gg("M5 10 L95 50",{y:'lengte'}),gg("M5 50 L95 10",{y:'lengte'}),gg("M5 10 Q15 48 95 50",{y:'lengte'}),gg("M5 10 L30 10 L30 25 L60 25 L60 40 L95 40",{y:'lengte'})],ok:0,key:'dalende rechte lijn',h:['De kaars wordt korter: stijgt of daalt de grafiek?','Steeds even snel = steeds even steil = een rechte lijn.'],x:'De kaars wordt steeds even snel korter: een dalende rechte lijn.'},
+{c:'Toetsniveau',t:'mc',q:'<p>Bas drinkt een glas limonade leeg. Hij neemt telkens een slok en wacht daarna even. Welke grafiek past bij de <b>hoeveelheid limonade in het glas</b>?</p>',o:[gg("M5 8 L15 8 L20 20 L35 20 L40 32 L55 32 L60 44 L75 44 L80 55 L95 55",{y:'hoeveelheid'}),gg("M5 8 L95 55",{y:'hoeveelheid'}),gg("M5 55 L15 55 L20 44 L35 44 L40 32 L55 32 L60 20 L75 20 L80 8 L95 8",{y:'hoeveelheid'}),gg("M5 8 L15 20 L20 12 L35 28 L40 20 L55 36 L60 28 L75 44 L80 55 L95 55",{y:'hoeveelheid'})],ok:0,key:'trap omlaag',h:['Bij een slok wordt het minder: dalen. Bij wachten: constant.','Kan er limonade bijkomen in het glas?'],x:'Slok: dalen. Wachten: constant. Dat geeft een trap naar beneden.'},
+{c:'Toetsniveau',t:'mc',fig:T_ZON,q:'<p>Fenna meet elke week de hoogte van haar zonnebloem. In welke week groeit de zonnebloem het meest? (Week 1 is van 0 tot 1, week 2 van 1 tot 2, enzovoort.)</p>',o:['Week 4','Week 5','Week 6','Week 3'],ok:0,h:['Bereken per week hoeveel cm erbij komt.','8, 12, 20, … reken verder.'],x:'De groei per week: 8, 12, 20, 30, 25, 15. In week 4 groeit hij 30 cm, het meest.'},
+{c:'Toetsniveau',t:'mc',fig:T_ZON,q:'<p>Laatste vraag! Je tekent de grafiek bij de tabel van Fenna. Hoe zie je in de grafiek in welke week de zonnebloem het meest groeit?</p>',o:['Daar loopt de grafiek het steilst omhoog','Daar is de grafiek het hoogst','Daar loopt de grafiek horizontaal','Daar daalt de grafiek'],ok:0,h:['Veel groei in één week = een groot stuk omhoog in één hokje naar rechts.','Groot stuk omhoog in weinig tijd heet …'],x:'Het meest groeien betekent het grootste stuk omhoog per week: daar is de grafiek het steilst. Het hoogste punt is pas in week 6, maar daar groeit hij minder hard.'}
+];
+
+/* ---------- bord ---------- */
+const GEESE=new Set([5,9,14,18,23,27,32,36,41,45,50,54,59]), REDS=new Set([19,26,39,47,58]), PIT=52, PIT_TO=31;
+const PAWNS=['🦊','🐸','🐧','🐥','🦄','🐼','🐯','🐵','🐨','🐙'];
+const COORD=(()=>{const c=[];let t=0,b=7,l=0,r=7;
+  while(t<=b&&l<=r){for(let x=l;x<=r;x++)c.push([b,x]);b--;for(let y=b;y>=t;y--)c.push([y,r]);r--;
+    if(t<=b){for(let x=r;x>=l;x--)c.push([t,x]);t++}if(l<=r){for(let y=t;y<=b;y++)c.push([y,l]);l++}}
+  return c})();
+const $=id=>document.getElementById(id);
+const board=$('board');const cells=[];
+for(let n=0;n<=63;n++){const d=document.createElement('div');const [r,c]=COORD[n];d.className='cell';d.style.gridRow=r+1;d.style.gridColumn=c+1;
+  let ico='';if(n===0){d.classList.add('start');ico='🏁'}else if(n===63){d.classList.add('finish');ico='🏆'}else if(GEESE.has(n)){d.classList.add('goose');ico='🪿'}else if(REDS.has(n)){d.classList.add('red');ico='⬅3'}else if(n===PIT){d.classList.add('pit');ico='🕳'}
+  if(n>30&&n<63&&!d.classList.contains('goose')&&!d.classList.contains('red')&&n!==PIT)d.classList.add('lvl2');
+  d.innerHTML=`<span class="num">${n===0?'start':n}</span><span class="ico">${ico}</span>`;d.setAttribute('aria-label','vakje '+n);board.appendChild(d);cells[n]=d}
+
+/* ---------- toestand ---------- */
+const fresh=()=>({name:'',klas:'',pawn:'🦊',pos:0,ok:0,bad:0,streak:0,shield:0,hints:0,miss:[],done:false,started:false});
+let S=fresh();
+try{const raw=localStorage.getItem('gb32');if(raw)S=Object.assign(fresh(),JSON.parse(raw))}catch(e){}
+const save=()=>{try{localStorage.setItem('gb32',JSON.stringify(S))}catch(e){}};
+let busy=false;
+
+function render(){
+  document.querySelectorAll('.pawn').forEach(p=>p.remove());
+  const p=document.createElement('span');p.className='pawn';p.id='pawnEl';p.textContent=S.pawn;cells[S.pos].appendChild(p);
+  $('pPawn').textContent=S.pawn;$('pName').textContent=(S.name||'Speler')+(S.klas?' · '+S.klas:'');
+  $('pInfo').textContent='Vakje '+S.pos+(S.pos>30?' · toetsniveau':'');
+  $('sOk').textContent=S.ok;$('sBad').textContent=S.bad;$('sStreak').textContent=S.streak;
+  $('shieldBox').innerHTML=S.shield>0?`<span class="shield">🛡 Onkwetsbaar: nog ${S.shield} beurt${S.shield>1?'en':''}</span>`:'';
+  const m=$('miss');if(!S.miss.length)m.innerHTML='<span class="log">Nog geen fouten. Vragen die je fout hebt, kun je hier opnieuw oefenen.</span>';
+  else{m.innerHTML='';S.miss.slice().sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent='Vakje '+n;b.onclick=()=>openQ(n,{practice:true});m.appendChild(b)})}
+  $('btnRoll').disabled=busy||S.done;
+}
+const log=h=>{$('log').innerHTML=h};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function walkTo(to){const step=to>S.pos?1:-1;while(S.pos!==to){S.pos+=step;render();const p=$('pawnEl');p.classList.add('hop');await sleep(200);p.classList.remove('hop')}}
+
+/* ---------- beurt ---------- */
+async function roll(){
+  if(busy||S.done)return;busy=true;render();
+  const die=$('die');const d=1+Math.floor(Math.random()*3);
+  die.classList.remove('roll');void die.offsetWidth;die.classList.add('roll');
+  for(let i=0;i<5;i++){die.className='die roll d'+(1+i%3);await sleep(80)}
+  die.className='die d'+d;
+  let raw=S.pos+d, target=raw>63?63-(raw-63):raw;
+  cells[target].classList.add('target');
+  log(`Je gooit <strong>${d}</strong>. Beantwoord de vraag van <strong>vakje ${target}</strong>${raw>63?' (te ver, je kaatst terug)':''}.`);
+  const res=await openQ(target,{});
+  cells[target].classList.remove('target');
+  const hadShield=S.shield>0;
+  if(res){
+    if(raw>63){await walkTo(63);await sleep(150)}
+    await walkTo(target);
+    await special(target,d);
+  }else log(`Helaas, je blijft op vakje ${S.pos}. Kijk de uitleg nog eens na in je schrift.`);
+  if(hadShield&&S.shield>0)S.shield--;
+  busy=false;save();render();
+}
+async function special(sq,d){
+  if(sq===63){S.done=true;save();render();finish();return}
+  if(GEESE.has(sq)){let raw=sq+d,t=raw>63?63-(raw-63):raw;log(`🪿 Gans! Je vliegt nog <strong>${d}</strong> vakje${d>1?'s':''} verder, naar vakje ${t}.`);await sleep(500);if(raw>63)await walkTo(63);await walkTo(t);if(t===63){S.done=true;save();render();finish()}return}
+  if(REDS.has(sq)){if(S.shield>0){log('🛡 Rood vakje, maar je schild beschermt je!');return}log('⬅ Rood vakje: 3 vakjes terug.');await sleep(500);await walkTo(sq-3);return}
+  if(sq===PIT){if(S.shield>0){log('🛡 De put! Maar je schild beschermt je.');return}log(`🕳 In de put! Terug naar vakje ${PIT_TO}.`);await sleep(600);await walkTo(PIT_TO);return}
+  log(`Goed zo! Je staat op <strong>vakje ${sq}</strong>. Gooi opnieuw.`);
+}
+
+/* ---------- vraagkaart ---------- */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function openQ(n,{practice=false}){
+  return new Promise(resolve=>{
+    const q=Q[n],card=$('qCard');let tries=0,hintsShown=0,sel=null,finished=false;
+    const order=q.t==='mc'?shuffle(q.o.map((_,i)=>i)):null;
+    const isSvg=q.t==='mc'&&q.o[0].trim().startsWith('<svg');
+    card.innerHTML=`
+      <div class="qhead"><span class="sq">Vakje ${n}</span><span class="tag ${n>30?'deep':''}">${q.c}</span>${practice?'<span class="tag">Oefenen</span>':''}</div>
+      ${n<=30?'<div class="schrift"><span>✏️</span><span>Gebruik je <strong>schrift</strong>: schrijf het vakjenummer op, lees af of teken mee, en schrijf je berekening en antwoord op.</span></div>':''}
+      ${q.fig?`<div class="fig">${q.fig}</div>`:''}
+      <div class="qtext">${q.q}</div>
+      ${q.t==='mc'?`<div class="opts ${isSvg?'':'text'}" id="opts">${order.map((oi,k)=>`<button type="button" class="opt" data-i="${oi}"><span class="l">${'ABCD'[k]}</span><span style="min-width:0;flex:1">${q.o[oi]}</span></button>`).join('')}</div>`
+        :`<div class="numrow"><label for="ansIn" class="sr">Antwoord:</label><input id="ansIn" inputmode="decimal" autocomplete="off" placeholder="?"><span style="font-weight:700">${q.u||''}</span></div>`}
+      <div class="hints" id="hints"></div>
+      <div id="fb"></div>
+      <div class="actions"><button type="button" class="btn-ghost" id="hintBtn">💡 Hint 1</button><div style="display:flex;gap:10px"><button type="button" class="btn-ghost" id="closeBtn" ${practice?'':'hidden'}>Sluiten</button><button type="button" class="btn-teal" id="checkBtn">Controleer mijn antwoord</button></div></div>`;
+    $('qOv').hidden=false;card.scrollTop=0;$('qOv').scrollTop=0;
+    const fb=$('fb'),hb=$('hintBtn'),cb=$('checkBtn');
+    if(q.t==='mc')card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(finished||b.classList.contains('wrong'))return;card.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=+b.dataset.i});
+    else{const inp=$('ansIn');inp.focus();inp.onkeydown=e=>{if(e.key==='Enter')cb.click()}}
+    hb.onclick=()=>{if(hintsShown>=q.h.length)return;const h=document.createElement('div');h.className='hint';h.innerHTML=`<strong>Hint ${hintsShown+1}:</strong> ${q.h[hintsShown]}`;$('hints').appendChild(h);hintsShown++;if(!practice)S.hints++;
+      if(hintsShown>=q.h.length){hb.disabled=true;hb.textContent='Geen hints meer'}else hb.textContent='💡 Hint 2'};
+    const keyText=()=>q.t==='num'?`${q.ok} ${q.u||''}`:(q.key||q.o[q.ok]);
+    const done=(good)=>{finished=true;hb.disabled=true;cb.textContent=practice?'Sluiten':(good?'Verder naar vakje '+n:'Verder');cb.onclick=()=>{$('qOv').hidden=true;resolve(good)}};
+    $('closeBtn').onclick=()=>{$('qOv').hidden=true;resolve(false)};
+    cb.onclick=()=>{
+      let good;
+      if(q.t==='mc'){if(sel===null){fb.innerHTML='<div class="fb bad">Kies eerst een antwoord.</div>';return}good=sel===q.ok}
+      else{const v=parseFloat($('ansIn').value.replace(',','.').replace(/[^\d.\-]/g,''));if(isNaN(v)){fb.innerHTML='<div class="fb bad">Typ eerst een getal.</div>';return}good=Math.abs(v-q.ok)<=(q.tol||0)}
+      if(good){
+        if(q.t==='mc')card.querySelector(`.opt[data-i="${q.ok}"]`).classList.add('right');
+        fb.innerHTML=`<div class="fb ok">✅ Goed!<span class="ex">${q.x}</span></div>`;
+        if(!practice){S.ok++;S.streak++;if(S.streak>=5&&S.shield===0){S.shield=4;S.streak=0;fb.innerHTML+=`<div class="fb ok" style="margin-top:8px">🛡 5 keer goed op rij! Je bent 3 beurten onkwetsbaar.</div>`}}
+        else{S.miss=S.miss.filter(m=>m!==n);fb.innerHTML+=`<div class="fb ok" style="margin-top:8px">Deze vraag is van je foutenlijst gehaald.</div>`}
+        save();render();done(true);return}
+      tries++;
+      if(tries===1){
+        if(q.t==='mc'){const b=card.querySelector(`.opt[data-i="${sel}"]`);b.classList.remove('sel');b.classList.add('wrong');sel=null}
+        fb.innerHTML=`<div class="fb bad">❌ Nog niet goed. Je krijgt nog één poging.${hintsShown<q.h.length?' Gebruik een hint als je vastzit.':''}</div>`;return}
+      if(q.t==='mc'){card.querySelector(`.opt[data-i="${sel}"]`)?.classList.add('wrong');card.querySelector(`.opt[data-i="${q.ok}"]`).classList.add('right')}
+      fb.innerHTML=`<div class="fb bad">❌ Helaas. Het goede antwoord is: ${q.t==='num'?keyText():'het groene antwoord'}.<span class="ex">${q.x}</span></div>`;
+      if(!practice){S.bad++;S.streak=0;if(!S.miss.includes(n))S.miss.push(n)}
+      save();render();done(false);
+    };
+  });
+}
+function finish(){
+  const card=$('qCard');
+  card.innerHTML=`<h2>🏆 Gefeliciteerd${S.name?', '+S.name:''}!</h2>
+  <p class="qtext">Je hebt vakje 63 gehaald. Je had <strong>${S.ok}</strong> vragen goed en <strong>${S.bad}</strong> fout, en je gebruikte <strong>${S.hints}</strong> hints.</p>
+  ${S.miss.length?`<p class="qtext">Oefen deze vragen nog eens voor de toets (klik in het paneel "Mijn fouten"): <strong>${S.miss.sort((a,b)=>a-b).join(', ')}</strong>.</p>`:'<p class="qtext">Geen fouten meer op je lijst. Je bent klaar voor de toets!</p>'}
+  <p class="qtext">Check ook de leerdoelen: kun je grafieken aflezen, een grafiek bij een tabel tekenen en globale grafieken aflezen?</p>
+  <div class="actions"><button class="btn-ghost" type="button" id="fClose">Bord bekijken</button><button class="btn-sun" type="button" id="fAgain">Nog een keer spelen</button></div>`;
+  $('qOv').hidden=false;$('fClose').onclick=()=>$('qOv').hidden=true;$('fAgain').onclick=()=>{$('qOv').hidden=true;restart()};
+}
+
+/* ---------- start ---------- */
+let pick=S.pawn;
+const pp=$('pawnPick');PAWNS.forEach(e=>{const b=document.createElement('button');b.type='button';b.textContent=e;b.setAttribute('aria-label','pion '+e);if(e===pick)b.classList.add('sel');b.onclick=()=>{pick=e;pp.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')};pp.appendChild(b)});
+if(S.started&&!S.done){$('btnContinue').hidden=false;$('inName').value=S.name;$('inClass').value=S.klas}
+$('btnContinue').onclick=()=>{$('startOv').hidden=true;render()};
+$('btnStart').onclick=()=>{const keep={name:$('inName').value.trim(),klas:$('inClass').value.trim(),pawn:pick};S=Object.assign(fresh(),keep,{started:true});save();$('startOv').hidden=true;$('die').className='die d1';log('Gooi om te beginnen. De dobbelsteen geeft 1, 2 of 3.');render()};
+function restart(){$('btnContinue').hidden=true;$('startOv').hidden=false}
+$('btnRestart').onclick=restart;
+$('btnRoll').onclick=roll;
+
+/* antwoordenblad */
+const strip=h=>h.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+$('keylist').innerHTML=Q.slice(1).map((q,i)=>{const n=i+1;const a=q.t==='num'?`${q.ok} ${q.u||''}`:(q.key||strip(q.o[q.ok]));return `<div><strong>${n}.</strong> ${a}</div>`}).join('');
+render();
+</script>
+</body>
+</html>
