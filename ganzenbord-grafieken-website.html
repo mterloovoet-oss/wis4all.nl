@@ -198,10 +198,6 @@ details.key summary{cursor:pointer;font-weight:800;color:var(--soft)}
     </aside>
   </div>
 
-  <details class="key">
-    <summary>Antwoordenblad voor de docent</summary>
-    <div class="keylist" id="keylist"></div>
-  </details>
 </div>
 
 <div class="overlay" id="startOv">
@@ -478,9 +474,6 @@ function restart(){$('btnContinue').hidden=true;$('startOv').hidden=false}
 $('btnRestart').onclick=restart;
 $('btnRoll').onclick=roll;
 
-/* antwoordenblad */
-const strip=h=>h.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-$('keylist').innerHTML=Q.slice(1).map((q,i)=>{const n=i+1;const a=q.t==='num'?`${q.ok} ${q.u||''}`:(q.key||strip(q.o[q.ok]));return `<div><strong>${n}.</strong> ${a}</div>`}).join('');
 render();
 </script>
 </body>
